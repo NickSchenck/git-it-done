@@ -1,53 +1,68 @@
-var userFormEl = document.querySelector("#user-form");
-var nameInputEl = document.querySelector("#username");
-var repoContainerEl = document.querySelector("#repos-container");
-var repoSearchTerm = document.querySelector("#repo-search-term");
-var languageButtonsEl = document.querySelector("#language-buttons");
+/*We have several variables here. userFormEl, nameInputEl,repoContainerEl, repoSearchTerm, and languageButtonsEl all select varrying
+parts of the application through ID's.*/
+let userFormEl = document.querySelector("#user-form");
+let nameInputEl = document.querySelector("#username");
+let repoContainerEl = document.querySelector("#repos-container");
+let repoSearchTerm = document.querySelector("#repo-search-term");
+let languageButtonsEl = document.querySelector("#language-buttons");
 
-var getUserRepos = function (user) {
-  // format the github api url
-  var apiUrl = "https://api.github.com/users/" + user + "/repos";
+/*getUserRepos is a function with one parameter, which makes API calls to get our data. We first start by defining apiUrl as a string
+which evaluates to a URL, with a template literal used to inject the searched-user into the URL path. Using the apiUrl as an argument,
+we then make a fetch call and append a .then method to enter into an anonymous function with response as a parameter. Within the
+anonymous function we enter an if statement, checking if the response object was successfully returned, and if so we parse the response
+object by appending .json, and submit it to another anonymous function within a .then method. The second anonymous function has a
+parameter of data, and calls the displayRepos function with the arguments data and user. Continued...*/
+let getUserRepos = function (user) {
+  let apiUrl = `https://api.github.com/users/${user}/repos`;
 
-  // make a get request to url
   fetch(apiUrl).then(function (response) {
-    //request was successful
+
     if (response.ok) {
       response.json().then(function (data) {
         displayRepos(data, user);
       });
+/*...Here, we enter into the else portion of our if statement, which will trigger if the response object was not successfully returned,
+and will open an alert window containing the message; "Error: GitHub User not found". Finally, a .catch method is appended for error
+handling, and calls an anonymous function with a parameter of error, which will also open an alert window for the user, containing the
+message; "Unable to connect to GitHub". */
     } else {
       alert("Error: GitHub User not found");
     }
   })
   .catch(function(error){
-    //.catch is being chained onto the end of .then, therefore you don't want a ; on the above closing brackets
     alert("Unable to connect to GitHub");
   });
 };
-var displayRepos = function (repos, searchTerm) {
+
+/*displayRepos is a function with two parameters, and displays or appends our fetched data to the page. We start with an if statement,
+checking if the length property of the repos parameter is zero, and if so setting the textContent property of repoContainerEl to; 
+"No repositories found", and returning out of the if statement. We then set the textContent property of repoContainerEl to an empty
+string and repoSearchTerm to the parameter searchTerm(a GitHub username), which will clear old content. Continued...*/
+let displayRepos = function (repos, searchTerm) {
+
   if(repos.length === 0){
     repoContainerEl.textContent = "No repositories found";
     return;
   }
-  //clears old content
   repoContainerEl.textContent = "";
   repoSearchTerm.textContent = searchTerm;
-  //loops over repos
-  for (var i = 0; i < repos.length; i++) {
-    //formats repo name
-    var repoName = repos[i].owner.login + "/" + repos[i].name;
-    //creates container/link for each repo
-    var repoEl = document.createElement("a");
+/*...Here, we enter into a for loop, initializing i as 0, checking if i is LESS THAN the length property of repos, and iterating i if
+it is. We then define repoName as the name property of repos at an index of i, concat with a / character and the login property of the
+owner property of repos at an index of i. We also define repoEl as creating a "a" element(anchor) within the document. Then, repoEl has
+4 bootstrap classes added to it with the .classList method and the href attribute added with a value of a partial URL string, containing
+a template literal. The variable titleEl is defined as creating a "span" element in the document, and its textContent property is set to
+the repoName variable. repoEl then uses the .appendChild method to append titleEl to it. Continued...*/
+  for (let i = 0; i < repos.length; i++) {
+    let repoName = repos[i].owner.login + "/" + repos[i].name;
+    let repoEl = document.createElement("a");
     repoEl.classList = "list-item flex-row justify-space-between align-center";
-    //gives the 'a' element a dynamically created link
-    repoEl.setAttribute("href", "./single-repo.html?repo=" + repoName);
-    //creates a span to hold repository name
-    var titleEl = document.createElement("span");
+    repoEl.setAttribute("href", `./single-repo.html?repo=${repoName}`);
+    let titleEl = document.createElement("span");
     titleEl.textContent = repoName;
     //append to the container
     repoEl.appendChild(titleEl);
     //creates a repo status element
-    var statusEl = document.createElement("span");
+    let statusEl = document.createElement("span");
     statusEl.classList = "flex-row align-center";
     //check if current repo has issues or not
     if (repos[i].open_issues_count > 0) {
@@ -61,10 +76,12 @@ var displayRepos = function (repos, searchTerm) {
     repoContainerEl.appendChild(repoEl);
   }
 };
-var formSubmitHandler = function (event) {
+
+
+let formSubmitHandler = function (event) {
   event.preventDefault();
   //get value from input element
-  var username = nameInputEl.value.trim();
+  let username = nameInputEl.value.trim();
   if (username) {
     getUserRepos(username);
     nameInputEl.value = "";
@@ -73,8 +90,8 @@ var formSubmitHandler = function (event) {
   }
   console.log(event);
 };
-var getFeaturedRepos = function(language){
-  var apiUrl = "https://api.github.com/search/repositories?q=" + language + "+is:featured&sort=help-wanted-issues";
+let getFeaturedRepos = function(language){
+  let apiUrl = "https://api.github.com/search/repositories?q=" + language + "+is:featured&sort=help-wanted-issues";
   fetch(apiUrl).then(function(response){
     if(response.ok){
       response.json().then(function(data){
@@ -85,8 +102,8 @@ var getFeaturedRepos = function(language){
     }
   });
 };
-var buttonClickHandler = function(event){
-  var language = event.target.getAttribute("data-language")
+let buttonClickHandler = function(event){
+  let language = event.target.getAttribute("data-language")
   console.log(language)
   if(language){
     getFeaturedRepos(language);
