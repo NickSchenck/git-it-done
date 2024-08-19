@@ -48,7 +48,7 @@ let displayRepos = function (repos, searchTerm) {
   repoSearchTerm.textContent = searchTerm;
 /*...Here, we enter into a for loop, initializing i as 0, checking if i is LESS THAN the length property of repos, and iterating i if
 it is. We then define repoName as the name property of repos at an index of i, concat with a / character and the login property of the
-owner property of repos at an index of i. We also define repoEl as creating a "a" element(anchor) within the document. Then, repoEl has
+owner property of repos at an index of i. We also define repoEl as creating an "a" element(anchor) within the document. Then, repoEl has
 4 bootstrap classes added to it with the .classList method and the href attribute added with a value of a partial URL string, containing
 a template literal. The variable titleEl is defined as creating a "span" element in the document, and its textContent property is set to
 the repoName variable. repoEl then uses the .appendChild method to append titleEl to it. Continued...*/
@@ -59,56 +59,82 @@ the repoName variable. repoEl then uses the .appendChild method to append titleE
     repoEl.setAttribute("href", `./single-repo.html?repo=${repoName}`);
     let titleEl = document.createElement("span");
     titleEl.textContent = repoName;
-    //append to the container
     repoEl.appendChild(titleEl);
-    //creates a repo status element
+/*...Here, we define statusEl as creating a "span" element within the document, then use the classList method to add 2 bootstrap classes
+to statusEl. We then enter into a if statement, nested in our for loop. Our if statement checks if the open_issues_count property of
+repos at an index is GREATER THAN 0, and if so we set the innerHTML value of statusEl to a string containing a template literal, which
+evaluates to an "i" element. Otherwise we set the innerHTML value of statusEl to a string which evaluates to an "i" element, and doesn't
+contain a template literal. After exiting the if statement, we use the .appendChild method to append statusEl to repoEl, and to append
+repoEl to repoContainerEl.*/
     let statusEl = document.createElement("span");
     statusEl.classList = "flex-row align-center";
-    //check if current repo has issues or not
+
     if (repos[i].open_issues_count > 0) {
-      statusEl.innerHTML = "<i class='fas fa-times status-icon icon-danger'></i>" + repos[i].open_issues_count + " issue(s)";
+      statusEl.innerHTML = `<i class='fas fa-times status-icon icon-danger'></i>${repos[i].open_issues_count} issue(s)`;
     } else {
       statusEl.innerHTML = "<i class='fas fa-check-square status-icon icon-success'></i>";
-    }
-    //appends if loop results to container
+    };
     repoEl.appendChild(statusEl);
-    //append container to the DOM
     repoContainerEl.appendChild(repoEl);
-  }
+  };
 };
 
-
+/*formSubmitHandler is a function with one parameter which handles form submission. We first use the .preventDefault method on our event
+object, preventing the page from being reloaded automatically upon the user submitting the form, then define username as the value
+property of nameInputEl with the .trim method, which prevents any starting or ending whitespace from being submitted. We then enter into
+an if statement which checks if username is truthy(if it exists), and if so we call the getUserRepos function with the argument username,
+and set the value property of nameInputEl to an empty string(resetting the submission-box for a GitHub user to search for). Otherwise, we
+call an alert notification with the text "Please enter a Github username".*/
 let formSubmitHandler = function (event) {
   event.preventDefault();
-  //get value from input element
   let username = nameInputEl.value.trim();
+
   if (username) {
     getUserRepos(username);
     nameInputEl.value = "";
   } else {
     alert("Please enter a Github username");
-  }
-  console.log(event);
+  };
 };
+
+/*getFeaturedRepos is a function with one parameter which makes an API call to fetch our data, then a function call to display it. We
+start by defining apiUrl as a string containing a template literal which evaluates to a URL call. Then, we pass apiUrl to the fetch
+method and append a .then method containing an anonymous function with one parameter. Within the anonymous function, we enter an if
+statement which checks if the response object was returned correctly, and if so we use the .json method on response to parse it as an
+object. We then append .then method with an anonymous function with one parameter. Inside the anonymous function, we call the
+displayRepos function with 2 arguments. Otherwise- if the response is NOT returned as expected- we call an alert notification with the
+text "Error: GitHub User not found".*/
 let getFeaturedRepos = function(language){
-  let apiUrl = "https://api.github.com/search/repositories?q=" + language + "+is:featured&sort=help-wanted-issues";
+  let apiUrl = `https://api.github.com/search/repositories?q=${language}+is:featured&sort=help-wanted-issues`;
   fetch(apiUrl).then(function(response){
+
     if(response.ok){
       response.json().then(function(data){
         displayRepos(data.items, language);
       });
     } else{
       alert("Error: GitHub User not found");
-    }
+    };
   });
 };
+
+/*buttonClickHandler is a function with one parameter which determines what happens after a certain element is clicked. We start by
+defining language as the attribute "data-language" on the target of our event. We then enter an if statement which checks if language is
+truthy(if it exists), and if so we call the getFeaturedRepos function with the argument of language, and set the textContent value of
+repoContainerEl to an empty string.*/
 let buttonClickHandler = function(event){
   let language = event.target.getAttribute("data-language")
-  console.log(language)
+
   if(language){
     getFeaturedRepos(language);
     repoContainerEl.textContent = "";
-  }
+  };
 };
+
+/*Below are 2 event listeners which essentially drive our app.*/
+/*Here we have an event listener on userFormEl, listening for a "submit" event, and calling the formSubmitHandler function on
+activation.*/
 userFormEl.addEventListener("submit", formSubmitHandler);
+/*Here we have an event listener on languageButtonsEl, listening for a "click" event, and calling the buttonClickHandler function on
+activation.*/
 languageButtonsEl.addEventListener("click", buttonClickHandler);
